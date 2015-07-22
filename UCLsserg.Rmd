@@ -1,0 +1,292 @@
+---
+title: "Data Analysis in Software Engineering"
+output: html_document
+---
+
+This is the R Markdown document for the talk to be given at the UCL-Software System Engineering (SSE) Reading Group (RG) on Wednesday, 12th of August, 2015. This document requires the R system and the Rstudio installed. This document executes all chunks of R code and generates an html document. 
+
+The purpose of the talk is to give a hands-on experience of what to analyse software engineering data is like. We use basic statistical procedures for analysing some public software engineering datasets. 
+
+## R Markdown
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Outline of the talk
+- The process of analysing data in software engineering
+- Getting data
+- Exploratory Data Analysis
+- Model Building for Prediction
+  + Linear Regression
+  + Machine Learning Techniques
+- Model Evaluation
+  + Descriptive statistics
+- Confidence Intervals
+- Hypothesis Testing
+  + p-values
+  + Equivalence hypothesis testing
+- Frequentism vs Bayesianism
+
+
+## Read a data file and explore its descriptive statistics
+  - Displaying information graphically will help us to identify the main characteristics of the data
+  - Basic Plots: Histogram, Boxplot, Q-Q plot
+
+
+## Software Engineering Data is less "friendly". Telecom1
+```{r}
+path2files <- "~/DocProjects/PRESI2013/london2015"
+setwd(path2files)
+telecom1 <- read.table("Telecom1.csv", sep=",",header=TRUE, stringsAsFactors=FALSE, dec = ".") #read data
+summary(telecom1)
+par(mfrow=c(1,2))
+size <- log(telecom1[1])
+actual_effort <- telecom1[2]
+summary(size)
+summary(actual_effort)
+hist(telecom1$size, col="blue")
+hist(telecom1$effort, col="blue")
+hist(log(telecom1$size), col="blue")
+hist(log(telecom1$effort), col="blue")
+boxplot(telecom1$size)
+boxplot(telecom1$effort)
+
+par(mfrow=c(1,1))
+x <- telecom1$size
+y <- telecom1$effort
+lmtelecom1 <- lm( y ~ x)
+plot(x,y)
+abline(lmtelecom1, lwd=2)
+
+# calculate residuals and predicted values
+res <- signif(residuals(lmtelecom1), 5)
+pre <- predict(lmtelecom1)
+# plot distances between points and the regression line
+segments(x, y, x, pre, col="red")
+
+par(mfrow=c(2,2))
+plot(lmtelecom1)
+
+```
+## China dataset 
+```{r}
+library(foreign)
+china <- read.arff("china.arff")
+afpsize <- china$AFP
+summary(afpsize)
+effort_china <- china$Effort
+summary(effort_china)
+par(mfrow=c(1,2))
+hist(afpsize, col="blue", xlab="Adjusted Function Points", main="Distribution of AFP")
+hist(effort_china, col="blue",xlab="Effort", main="Distribution of Effort")
+boxplot(afpsize)
+boxplot(effort_china)
+```
+
+## Normalization
+```{r}
+par(mfrow=c(1,2))
+logafp = log(afpsize)
+hist(logafp, col="blue", xlab="log 10Adjusted Function Points", main="Distribution of log AFP")
+logeffchina = log(effort_china)
+hist(logeffchina, col="blue",xlab="Effort", main="Distribution of log Effort")
+```
+
+
+## Fitting a linear model to log-log (1)
+
+  - the predictive power equation is $y= e^{b_0 + b_1 log(x)} $, ignoring the bias corrections
+  - We are fitting the model to the whole dataset
+```{r}
+linmodel <- lm(logeffchina ~ logafp)
+par(mfrow=c(2,2))
+plot(linmodel)
+
+```
+
+## Fitting a linear model splitting data into Training and Testing (2)
+
+```{r}
+chinaTrain <- read.arff("china3AttSelectedAFPTrain.arff")
+afpsize <- chinaTrain$AFP
+summary(afpsize)
+effort_china <- chinaTrain$Effort
+summary(effort_china)
+par(mfrow=c(1,2))
+hist(afpsize, col="blue", xlab="Adjusted Function Points", main="Distribution of AFP")
+hist(effort_china, col="blue",xlab="Effort", main="Distribution of Effort")
+boxplot(afpsize)
+boxplot(effort_china)
+```
+
+
+## Normalization
+```{r}
+par(mfrow=c(1,2))
+logafp = log(afpsize)
+hist(logafp, col="blue", xlab="log 10Adjusted Function Points", main="Distribution of log AFP")
+logeffchina = log(effort_china)
+hist(logeffchina, col="blue",xlab="Effort", main="Distribution of log Effort")
+```
+
+
+## Fitting a linear model to log-log (1)
+
+  - the predictive power equation is $y= e^{b_0 + b_1 log(x)} $, ignoring the bias corrections
+  - We are fitting the model to the whole dataset
+```{r}
+linemodel <- lm(logeffchina ~ logafp)
+plot(logafp,logeffchina)
+abline(linemodel, lwd=2)
+par(mfrow=c(2,2))
+plot(linemodel)
+
+```
+
+```{r}
+par(mfrow=c(1,2))
+qqnorm(effort_china)
+qqnorm(logeffchina)
+```
+
+
+## Evaluation of the model in the Testing data (2)
+
+```{r}
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))}
+
+chinaTest <- read.arff("china3AttSelectedAFPTest.arff")
+b0 <- linemodel$coefficients[1]
+b1 <- linemodel$coefficients[2]
+AFPTest <- chinaTest$AFP
+actualEffort <- chinaTest$Effort
+predEffort <- exp(b0+b1*log(AFPTest))
+
+err <- actualEffort - predEffort  #error or residual
+ae <- abs(err)
+hist(ae)
+mar <- mean(ae)
+mre <- ae/actualEffort
+mmre <- mean(mre)
+mdmre <- median(mre)
+gmar <- gm_mean(ae)
+mar
+mmre
+mdmre
+gmar
+```
+## Standard Accuracy. MARP0. ChinaTest
+- Computing $ MARP_0$ in the China Test data
+
+```{r}
+estimEffChinaTest <- predEffort  # This will be overwritten, no problem
+numruns <- 9999
+randguessruns <- rep(0, numruns)
+for (i in 1:numruns) { 
+  for (j in 1:length(estimEffChinaTest)) {
+    estimEffChinaTest[j] <- sample(actualEffort[-j],1)}#replacement with random guessingt    
+  randguessruns[i] <- mean(abs(estimEffChinaTest-actualEffort))
+  } 
+marp0Chinatest <- mean(randguessruns)
+marp0Chinatest
+hist(randguessruns)
+
+sa = (1- mar/marp0Chinatest)*100
+sa
+```
+
+## Level of Prediction. LPred(l)
+- Defined as the percentage of estimates that are within the level l% of the actual values
+- Usually set at 25%
+
+```{r}
+level_pred <- 0.25
+lowpred <- actualEffort*(1-level_pred)
+uppred <-  actualEffort*(1+level_pred)
+pred  <-  predEffort <= uppred & predEffort >= lowpred  #pred is a vector with logical values 
+Lpred <- sum(pred)/length(pred)
+Lpred
+```
+
+
+
+## Confidence Intervals. Bootstrap
+
+```{r}
+hist(ae)
+
+```
+
+
+## Telecom1. Fitting a line. Brute force approach
+
+
+
+## Standard Accuracy. MARP0. Telecom1
+  - Computing $ MARP_0$
+  - For checking results you may use figure Atkinson in Shepperd&McDonnell
+
+```{r}
+path2files <- "~/DocProjects/PRESI2013/london2015"
+setwd(path2files)
+telecom1 <- read.table("Telecom1.csv", sep=",",header=TRUE, stringsAsFactors=FALSE, dec = ".") #read data
+#par(mfrow=c(1,2))
+#size <- telecom1[1]$size   not needed now
+actualEffTelecom1 <- telecom1[2]$effort
+estimEffTelecom1 <- telecom1[3]$EstTotal # this will be overwritten
+numruns <- 9999
+randguessruns <- rep(0, numruns)
+for (i in 1:numruns) { 
+  for (j in 1:length(estimEffTelecom1)) {
+    estimEffTelecom1[j] <- sample(actualEffTelecom1[-j],1)}#replacement with random guessingt    
+  randguessruns[i] <- mean(abs(estimEffTelecom1-actualEffTelecom1))
+  } 
+marp0 <- mean(randguessruns)
+marp0
+hist(randguessruns)
+```
+
+### MARP0 in the Atkinson dataset
+
+```{r}
+act_effort <- c(670,912,218,595,267,344,229,190,869,109,289,616,557,416,578,438)
+estim_effort <- rep(0, length(act_effort))
+numruns <- 9999
+randnaiveruns <- rep(0, numruns)
+for (i in 1:numruns) { 
+  for (j in 1:length(act_effort)) {
+    estim_effort[j] <- sample(act_effort[-j],1)}#replacement with random guessingt    
+  randnaiveruns[i] <- mean(abs(estim_effort-act_effort))
+  } 
+marp0 <- mean(randnaiveruns)
+marp0
+hist(randnaiveruns)
+```
+
+
+## ISBSG dataset
+```{r}
+setwd("~/Dropbox/dhl/dataGeneration/DataSourcesFromWeka")
+isbsgTrain8 <- read.arff("ISBSGv10_AttributesSelected_952Instances_8Att_Train_CLast.arff")
+isbsgTest8 <- read.arff("ISBSGv10_AttributesSelected_952Instances_8Att_Test_CLast.arff")
+
+
+```
+
+
+## Galton Data works well
+```{r}
+library(UsingR); data(galton)
+par(mfrow=c(1,2))
+hist(galton$child,col="blue",breaks=100)
+hist(galton$parent,col="blue",breaks=100)
+plot(galton$parent,galton$child,pch=1,col="blue", cex=0.4)
+lm1 <- lm(galton$child ~ galton$parent)
+lines(galton$parent,lm1$fitted,col="red",lwd=3)
+plot(galton$parent,lm1$residuals,col="blue",pch=1, cex=0.4)
+abline(c(0,0),col="red",lwd=3)
+qqnorm(galton$child)
+```
+
