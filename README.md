@@ -3,4 +3,4 @@ Repository for the talk at UCL-Software System Engineering Reading Group to be g
 
 The user must have R and RStudio installed on their computer in order to run the .Rmd markdown document. Otherwise the user can only browse the .html document.
 
-# ROUGH DRAFT. DO NOT USE
+## ROUGH DRAFT. DO NOT USE IT YET
