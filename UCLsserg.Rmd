@@ -37,7 +37,7 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ## Software Engineering Data is less "friendly". Telecom1
 ```{r}
-path2files <- "~/DocProjects/PRESI2013/london2015"
+path2files <- "~/DocProjects/PRESI2013/uclsserg2015"
 setwd(path2files)
 telecom1 <- read.table("Telecom1.csv", sep=",",header=TRUE, stringsAsFactors=FALSE, dec = ".") #read data
 summary(telecom1)
@@ -67,9 +67,12 @@ pre <- predict(lmtelecom1)
 segments(x, y, x, pre, col="red")
 
 par(mfrow=c(2,2))
-plot(lmtelecom1)## Level of Prediction. LPred(l)
-- Defined as the percentage of estimates that are within the level l% of the actual values
-- Usually set at 25%
+plot(lmtelecom1)
+```
+
+## Level of Prediction. LPred(l)
+  - Defined as the percentage of estimates that are within the level l% of the actual values
+  - Usually set at 25%
 
 ```{r}
 level_pred <- 0.25 #below and above (both)
