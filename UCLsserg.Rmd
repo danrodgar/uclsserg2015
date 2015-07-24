@@ -14,24 +14,25 @@ This is an R Markdown presentation. Markdown is a simple formatting syntax for a
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
 ## Outline of the talk
-- The process of analysing data in software engineering
-- Getting data
-- Exploratory Data Analysis
-- Model Building for Prediction
-  + Linear Regression
-  + Machine Learning Techniques
-- Model Evaluation
-  + Descriptive statistics
-- Confidence Intervals
-- Hypothesis Testing
-  + p-values
-  + Equivalence hypothesis testing
-- Frequentism vs Bayesianism
+  - The process of analysing data in software engineering
+  - Getting data
+  - Exploratory Data Analysis
+  - Model Building for Prediction
+    + Linear Regression
+    + Machine Learning Techniques
+  - Model Evaluation
+    + Descriptive statistics
+  - Confidence Intervals
+  - Hypothesis Testing
+    + p-values
+    + Equivalence hypothesis testing
+  - Frequentism vs Bayesianism
+  - Bayesian Networks
 
 
 ## Read a data file and explore its descriptive statistics
   - Displaying information graphically will help us to identify the main characteristics of the data
-  - Basic Plots: Histogram, Boxplot, Q-Q plot
+  - Basic Plots: Histogram, Boxplot, Scatterplot Q-Q plot
 
 
 ## Software Engineering Data is less "friendly". Telecom1
@@ -69,7 +70,10 @@ par(mfrow=c(2,2))
 plot(lmtelecom1)
 
 ```
-## China dataset 
+## China dataset. Correlation. 
+  - With the whole dataset we may check for the Correlation of the variables we are interested in
+  - 
+  
 ```{r}
 library(foreign)
 china <- read.arff("china.arff")
@@ -82,6 +86,12 @@ hist(afpsize, col="blue", xlab="Adjusted Function Points", main="Distribution of
 hist(effort_china, col="blue",xlab="Effort", main="Distribution of Effort")
 boxplot(afpsize)
 boxplot(effort_china)
+par(mfrow=c(1,1))
+plot(effort_china, afpsize)
+cor(afpsize,effort_china)
+cor.test(afpsize,effort_china)
+cor(afpsize,effort_china, method="spearman")
+cor(afpsize,effort_china, method="kendall")
 ```
 
 ## Normalization
@@ -202,7 +212,7 @@ sa
 - Usually set at 25%
 
 ```{r}
-level_pred <- 0.25
+level_pred <- 0.25 #below and above (both)
 lowpred <- actualEffort*(1-level_pred)
 uppred <-  actualEffort*(1+level_pred)
 pred  <-  predEffort <= uppred & predEffort >= lowpred  #pred is a vector with logical values 
@@ -215,8 +225,41 @@ Lpred
 ## Confidence Intervals. Bootstrap
 
 ```{r}
+library(boot)
 hist(ae)
+level_confidence <- 0.95
+repetitionsboot <- 9999
+samplemean <- function(x, d){return(mean(x[d]))}
+b_mean <- boot(ae, samplemean, R=repetitionsboot)
+confint_mean <- boot.ci(b_mean)
+confint_mean
 
+boot_geom_mean <- function(error_vec){
+  log_error <- log(error_vec[error_vec > 0])
+  log_error <-log_error[is.finite(log_error)] #remove the -Inf value before calculating the mean, just in case
+  samplemean <- function(x, d){return(mean(x[d]))}
+  b <- boot(log_error, samplemean, R=repetitionsboot) # with package boot
+  # this is a boot for the logs
+  return(b)
+}
+# BCAconfidence interval for the geometric mean
+BCAciboot4geommean <- function(b){  
+  conf_int <- boot.ci(b, conf=level_confidence, type="bca")$bca #following 10.9 of Ugarte et al.'s book
+  conf_int[5] <- exp(conf_int[5]) # the boot was computed with log. Now take the measure back to its previous units
+  conf_int[4] <- exp(conf_int[4])
+  return (conf_int)
+}
+# this is a boot object
+b_gm <- boot_geom_mean(ae)
+exp(b_gm$t0)
+b_ci_gm <- BCAciboot4geommean(b_gm)
+b_ci_gm
+
+# Make a % confidence interval bca
+# BCAciboot <- function(b){  
+#   conf_int <- boot.ci(b, conf=level_confidence, type="bca")$bca #following 10.9 of Ugarte et al.'s book
+#   return (conf_int)
+# }
 ```
 
 
