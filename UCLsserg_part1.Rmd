@@ -98,7 +98,7 @@ Important: for compiling this document you need to change the paths to the image
     + Scatterplot: A scatter plot provides a graphical view of the relationship between two sets of numbers: one numerical variable against another. 
 
 ## Normality 
-  - A normal distribution is an arrangement of a data set in which most values cluster in the middle of the range and the rest taper off symmetrically toward either extreme
+  - A normal distribution is an arrangement of a data set in which most values cluster in the middle of the range
   - A graphical representation of a normal distribution is sometimes called a bell curve because of its shape.
   - Many procedures in statistics are based on this property. Parametric procedures require the normality property.
 
@@ -220,7 +220,7 @@ residual error of zero; that is, there should not be a distinct trend in the dis
     + Leverage: measures the importance of each point in determining the regression result. Smaller values means that removing the observation has little effect on the regression result. 
 
 ## China dataset. Linear regression. Fitting a linear model to log-log
-  - the predictive power equation is $y= e^{b_0 + b_1 log(x)} $, ignoring the bias corrections
+  - the predictive power equation is $y= e^{b_0 + b_1 log(x)}$, ignoring the bias corrections
   - First, we are fitting the model to the whole dataset. But it is not the right way to do it, because of overfitting
   
 ```{r}
@@ -236,7 +236,13 @@ plot(linmodel, ask = FALSE)
   - Usually, part of the data points are used for building the model and the remaining points are used for validating the model. There are several approaches to this process.
   - *Validation Set approach*: it is the simplest method. It consists of randomly dividing the available set of oservations into two parts, a *training set* and a *validation set* of hold-out set. Usually 2/3 of the data points are used for training and 1/3 is used for testing purposes.
   - *Leave-One-Out Cross-Validation*: instead of creating two subsets for training and testing, a single observation is used for the validation set, and the remaining observations make up the training set. This approach is repeated n times (the total number of observations) and the estimate for the test mean squared error is the average of the n test estimates.
+  
+![](/home/javier/DocProjects/PRESI2013/london2015/leaveone.png) 
+
   - *k-Fold Cross-Validation*: it involves randomly dividing the set of observations into k groups, or folds, of approximately equal size. The first fold is treated as a validation set, the the methods is fit on the remaining k-1 folds. This procedure is repeated k times. If k is equal to n we are in the previous method.
+  
+  ![](/home/javier/DocProjects/PRESI2013/london2015/kfold.png) 
+  
   
 ## China dataset. Split data into Training and Testing
   - 
@@ -256,7 +262,7 @@ plot(linmodel, ask = FALSE)
   - There are several measures usually used:
   - *Mean Magnitude of the Relative Error (MMRE)*: this measure has been critisized many times. 
   $$ 
-  \frac{\sum_{n=1}^{n}{|{\hat{y}_i}|}/y_i}}{n}
+  \frac{\sum_{n=1}^{n}{|{\hat{y}_i}|}/y_i}{n}
   $$
   - *Median Magnitude of the Relative Error (MdMRE)*: using the median insted of the mean
   - *Level of Prediction (LPred(l))*: defined as the percentage of estimates that are within the level l% of the actual values. Usually the level of prediction is set at 25% below and above the actual value.
@@ -264,7 +270,7 @@ plot(linmodel, ask = FALSE)
 $$
  SA=1-{\frac{MAR}{\overline{MAR}_{P_0}}\times100}.
 $$
-
+  - "random guessing" is defined as: predict a $\hat{y}_t$ for the target case *t* by randomly sampling (with equal probability) over all the remaining n-1 cases and take $\hat{y}_t=y_r$ where r is drawn randomly from 1,n and $r\neq t$.
 
 ## Evaluation of the model in the Testing data (2)
 
@@ -362,7 +368,7 @@ mar_tel1
 ```
 
 ## Standardised Accuracy. MARP0. ChinaTest
-- Computing $ MARP_0$ in the China Test data
+- Computing $MARP_0$ in the China Test data
 
 ```{r}
 estimEffChinaTest <- predEffort  # This will be overwritten, no problem
@@ -384,7 +390,7 @@ saChina
 
 
 ## Standardised Accuracy. MARP0. Telecom1
-  - Computing $ MARP_0$
+  - Computing $MARP_0$
 
 ```{r}
 path2files <- "~/DocProjects/PRESI2013/london2015"
@@ -426,10 +432,62 @@ marp0atkinson
 hist(randnaiveruns)
 ```
 
-
-
-
 ## Confidence Intervals. Bootstrap
+  - A *confidence interval* (CI) is an interval estimate of a population parameter. The parameter can be the mean, the median or other. The frequentist CI is an observed interval that is different from sample to sample. It frequently includes the value of the unobservable parameter of interes if the experiment is repeated. The *confidence level* is the value that measures the frequency that the constructed intervals contain the true value of the parameter. 
+  - The construction of a confidence interval with an exact value of confidence level for a distribution requires some statistical properties. Usually, *normality* is one of the properties required for computing confidence intervals. 
+    - Not all confidence intervals contain the true value of the parameter.
+    - Simulation of confidence intervals
+
+
+
+```{r}
+# code from the book by Ugerte et al. Probability and statistics with R
+  norsim <- function(sims = 100, n = 36, mu = 100, sigma = 18, 
+                   conf.level = 0.95){
+  alpha <- 1 - conf.level
+  CL <- conf.level * 100
+  ll <- numeric(sims)
+  ul <- numeric(sims)
+  for (i in 1:sims){
+    xbar <- mean(rnorm(n , mu, sigma))
+    ll[i] <- xbar - qnorm(1 - alpha/2)*sigma/sqrt(n)
+    ul[i] <- xbar + qnorm(1 - alpha/2)*sigma/sqrt(n)
+  }
+  notin <- sum((ll > mu) + (ul < mu))
+  percentage <- round((notin/sims) * 100, 2)
+  SCL <- 100 - percentage
+  plot(ll, type = "n", ylim = c(min(ll), max(ul)), xlab = " ", 
+       ylab = " ")
+  for (i in 1:sims) {
+    low <- ll[i]
+    high <- ul[i]
+    if (low < mu & high > mu) {
+      segments(i, low, i, high)
+    }
+    else if (low > mu & high > mu) {
+      segments(i, low, i, high, col = "red", lwd = 5)
+    }
+    else {
+      segments(i, low, i, high, col = "blue", lwd = 5)
+    }
+  }
+  abline(h = mu)
+#   cat(SCL, "\b% of the random confidence intervals contain Mu =", mu, "\b.", "\n")
+}
+```
+
+```{r}
+set.seed(10)
+norsim(sims = 100, n = 36, mu = 100, sigma = 18, conf.level = 0.95)
+```
+
+
+
+## Nonparametric Bootstrap
+  - For computing CIs the important thing is to know the assumptions that are made to “know” the
+distribution of the statistic.
+  - There is a way to compute confidence intervals without meeting the requirements of parametric methods. 
+  - **Resampling** or *bootstraping* is a method 
 
 ```{r}
 library(boot)
@@ -468,3 +526,8 @@ b_ci_gm
 #   return (conf_int)
 # }
 ```
+
+
+## Genetic Programming for Symbolic Regression
+
+![](/home/javier/DocProjects/PRESI2013/london2015/gpEvolution.png)
