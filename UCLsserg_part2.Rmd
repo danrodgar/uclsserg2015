@@ -102,15 +102,4 @@ lines(x,wf(x), type = "l", col="red", lwd=2)
 
 ```
 
-***
-***
-***
 
-## ISBSG dataset
-```{r}
-setwd("~/Dropbox/dhl/dataGeneration/DataSourcesFromWeka")
-isbsgTrain8 <- read.arff("ISBSGv10_AttributesSelected_952Instances_8Att_Train_CLast.arff")
-isbsgTest8 <- read.arff("ISBSGv10_AttributesSelected_952Instances_8Att_Test_CLast.arff")
-
-
-```
