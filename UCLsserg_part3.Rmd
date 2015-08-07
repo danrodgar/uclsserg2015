@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis in Software Engineering. Part 3"
-output: pdf_document
+output: html_document
 header-includes: \usepackage{}
 ---
 
@@ -13,6 +13,6 @@ header-includes: \usepackage{}
 
 
 ## Neural Networks
-
+  - neuralnet package in R and caret. Need scaling of variables
   ![](/home/javier/DocProjects/PRESI2013/london2015/neuralnet.png)
  ![](/home/javier/DocProjects/PRESI2013/london2015/neuralnet2.png)

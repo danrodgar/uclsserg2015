@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis in Software Engineering"
-output: pdf_document
+output: html_document
 header-includes: \usepackage{amsmath}
 ---
 Author: Javier Dolado. Collaborator: Daniel Rodriguez
@@ -35,6 +35,11 @@ Important: for compiling this document you need to change the paths to the image
     + Equivalence hypothesis testing
 
 
+    
+    
+***
+
+
 ## Setting up the programming environment 
   - Install [R](https://www.r-project.org/) and [Rstudio](https://www.rstudio.com/) 
   - Install packages needed with the sentence install.packages("here-the-package-name")
@@ -65,9 +70,6 @@ Important: for compiling this document you need to change the paths to the image
     + Peter Dalgaard, *Introductory Statistics with R*, 2nd ed., Springer, 2008
     + Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani, *An Introduction to Statistical Learning with Applications in R*, Springer 2014
     + Geoff Cumming, *Understanding the New Statistics: Effect Sizes, Confidence Intervals, and Meta_Analysis*, Routledge, New York, 2012
-    
-    
-***
 
 
 ## Getting the Data
@@ -166,12 +168,19 @@ hist(effort_telecom1, col="blue")
 boxplot(size_telecom1)
 boxplot(effort_telecom1)
 par(mfrow=c(1,1))
-qqnorm(size_telecom1)
+qqnorm(size_telecom1, main="Q-Q Plot of 'size'")
 qqline(size_telecom1, col=2, lwd=2, lty=2) #draws a line through the first and third quartiles
-qqnorm(effort_telecom1)
+qqnorm(effort_telecom1,  main="Q-Q Plot of 'effort'")
 qqline(effort_telecom1)
 ```
   - We observe the non-normality of the data. 
+  
+  - We may look the posible relationship between size and effort with a scatterplot
+  
+```{r}
+plot(size_telecom1, effort_telecom1)
+```
+
 
 ## China dataset 
 ```{r}
@@ -237,7 +246,7 @@ cor(china_size,china_effort, method="kendall")
   
     ![](/home/javier/DocProjects/PRESI2013/london2015/galton.png)
   
-  - The equation takes the form $hat{y}......$
+  - The equation takes the form $\hat{y}=b_0+b_1 * x$
   - The method used to choose the values $b_0$ and $b_1$ is to minimize the sum of the squares of the residual errors.
 
 ## Galton Data
@@ -257,22 +266,23 @@ qqnorm(galton$child)
   
 ## Linear Regression Diagnostics
   - Several plots help to evaluate the suitability of the linear regression 
-    + Residuals vs fitted: The residuals should be randomly distributed around the horizontal line representing a residual error of zero; that is, there should not be a distinct trend in the distribution of points. 
-    + Standard Q-Q plot: residual errors are normally distributed
-    + Square root of the standardized residuals vs the fitted values: there should be no obvious trend.
-    + Leverage: measures the importance of each point in determining the regression result. Smaller values means that removing the observation has little effect on the regression result. 
+    + *Residuals vs fitted*: The residuals should be randomly distributed around the horizontal line representing a residual error of zero; that is, there should not be a distinct trend in the distribution of points. 
+    + *Standard Q-Q plot*: residual errors are normally distributed
+    + *Square root of the standardized residuals vs the fitted value*s: there should be no obvious trend.
+    + *Leverage*: measures the importance of each point in determining the regression result. Smaller values means that removing the observation has little effect on the regression result. 
 
 ## China dataset. Linear regression. Fitting a linear model to log-log
   - the predictive power equation is $y= e^{b_0 + b_1 log(x)}$, ignoring the bias corrections
-  - First, we are fitting the model to the whole dataset. But it is not the right way to do it, because of overfitting
+  - First, we are fitting the model to the whole dataset. But it is not the right way to do it, because of overfitting.
   
 ```{r}
-linmodel <- lm(logchina_effort ~ logchina_size)
+linmodel_logchina <- lm(logchina_effort ~ logchina_size)
 par(mfrow=c(1,1))
 plot(logchina_size, logchina_effort)
-abline(linmodel, lwd=3, col=3)
+abline(linmodel_logchina, lwd=3, col=3)
 par(mfrow=c(1,2))
-plot(linmodel, ask = FALSE)
+plot(linmodel_logchina, ask = FALSE)
+linmodel_logchina
 ```
 
 ## Building and Validating a Model
@@ -298,23 +308,26 @@ set. Usually 2/3 of the data points are used for training and 1/3 is used for te
 chinaTrain <- read.arff("china3AttSelectedAFPTrain.arff")
 logchina_size <- log(chinaTrain$AFP)
 logchina_effort <- log(chinaTrain$Effort)
-linmodel <- lm(logchina_effort ~ logchina_size)
+linmodel_logchina_train <- lm(logchina_effort ~ logchina_size)
 par(mfrow=c(1,1))
 plot(logchina_size, logchina_effort)
-abline(linmodel, lwd=3, col=4)
+abline(linmodel_logchina_train, lwd=3, col=4)
 par(mfrow=c(1,2))
-plot(linmodel, ask = FALSE)
+plot(linmodel_logchina_train, ask = FALSE)
+linmodel_logchina_train
 ```
 
 ## Measures of Evaluation used in Software Engineering
   - There are several measures usually used:
+  - *Mean of the Absolute Error*: compute the absolute errors and take the mean
+  - *Geometric Mean of the Absolute Error*: more appropriate when the distribution is skewed
   - *Mean Magnitude of the Relative Error (MMRE)*: this measure has been critisized many times. 
   $$ 
   \frac{\sum_{n=1}^{n}{|{\hat{y}_i}|}/y_i}{n}
   $$
   - *Median Magnitude of the Relative Error (MdMRE)*: using the median insted of the mean
-  - *Level of Prediction (LPred(l))*: defined as the percentage of estimates that are within the level l% of the actual values. Usually the level of prediction is set at 25% below and above the actual value.
-  - *Standardised Accuracy (SA)*: this measure overcomes all the problems of the MMRE. It is defined as the MAR relative to random guessing:
+  - *Level of Prediction (LPred(l))*: defined as the percentage of estimates that are within the level l% of the actual values. Usually the level of prediction is set at 25% below and above the actual value and an estimation method is considered good if give a result of more than 75%.
+  - *Standardised Accuracy (SA)*: this measure overcomes all the problems of the MMRE (proposed by Shepperd&MacDonnell). It is defined as the MAR relative to random guessing:
 $$
  SA=1-{\frac{MAR}{\overline{MAR}_{P_0}}\times100}.
 $$
@@ -327,15 +340,15 @@ gm_mean = function(x, na.rm=TRUE){
   exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))}
 
 chinaTest <- read.arff("china3AttSelectedAFPTest.arff")
-b0 <- linmodel$coefficients[1]
-b1 <- linmodel$coefficients[2]
+b0 <- linmodel_logchina_train$coefficients[1]
+b1 <- linmodel_logchina_train$coefficients[2]
 china_size_test <- chinaTest$AFP
 actualEffort <- chinaTest$Effort
 predEffort <- exp(b0+b1*log(china_size_test))
 
 err <- actualEffort - predEffort  #error or residual
 ae <- abs(err)
-hist(ae)
+hist(ae, main="Absolute Error in the China Test data")
 mar <- mean(ae)
 mre <- ae/actualEffort
 mmre <- mean(mre)
@@ -429,7 +442,7 @@ for (i in 1:numruns) {
   } 
 marp0Chinatest <- mean(randguessruns)
 marp0Chinatest
-hist(randguessruns)
+hist(randguessruns, main="MARP0 distribution of the China dataset")
 
 saChina = (1- mar/marp0Chinatest)*100
 saChina
@@ -457,7 +470,7 @@ for (i in 1:numruns) {
   } 
 marp0telecom1 <- mean(randguessruns)
 marp0telecom1
-hist(randguessruns)
+hist(randguessruns, main="MARP0 distribution of the Telecom1 dataset")
 saTelecom1 <- (1- mar_tel1/marp0telecom1)*100
 saTelecom1
 
@@ -465,7 +478,7 @@ saTelecom1
 
 ### MARP0 in the Atkinson dataset
   - For checking results you may use figure Atkinson in Shepperd&MacDonnell
-```{r}
+```{r, echo=FALSE}
 act_effort <- c(670,912,218,595,267,344,229,190,869,109,289,616,557,416,578,438)
 estim_effort <- rep(0, length(act_effort))
 numruns <- 9999
@@ -477,7 +490,7 @@ for (i in 1:numruns) {
   } 
 marp0atkinson <- mean(randnaiveruns)
 marp0atkinson
-hist(randnaiveruns)
+hist(randnaiveruns, main="MARP0 distribution of the Atkinson dataset")
 ```
 
 ## ISBSG dataset
@@ -496,7 +509,7 @@ hist(randnaiveruns)
 
 
 
-```{r}
+```{r, echo=FALSE}
 # code from the book by Ugerte et al. Probability and statistics with R
   norsim <- function(sims = 100, n = 36, mu = 100, sigma = 18, 
                    conf.level = 0.95){
@@ -555,7 +568,7 @@ distribution of the statistic.
   - Computing the bootstraped confidence interval of the mean for the Test observations of the China dataset:
 ```{r}
 library(boot)
-hist(ae)
+hist(ae, main="Absolute Errors of the China Test data")
 level_confidence <- 0.95
 repetitionsboot <- 9999
 samplemean <- function(x, d){return(mean(x[d]))}

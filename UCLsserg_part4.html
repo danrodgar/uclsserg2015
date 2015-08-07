@@ -101,13 +101,28 @@ t.test(data, mu=50, alternative = 'greater')</code></pre>
 ## mean of x 
 ##  54.33333</code></pre>
 <ul>
+<li><p>Keeping this simple, we could start hypothesis testing about one sample median with the wilcoxon test for non-normal distributions.</p></li>
+<li><p>“ae” is the absolute error in the China Test data</p></li>
+</ul>
+<pre class="r"><code>median(ae)</code></pre>
+<pre><code>## [1] 866.7193</code></pre>
+<pre class="r"><code>mean(ae)</code></pre>
+<pre><code>## [1] 1866.819</code></pre>
+<pre class="r"><code>wilcox.test(ae, mu=800, alternative = 'greater') #change the values of mu and see the results</code></pre>
+<pre><code>## 
+##  Wilcoxon signed rank test with continuity correction
+## 
+## data:  ae
+## V = 8990, p-value = 0.0007975
+## alternative hypothesis: true location is greater than 800</code></pre>
+<ul>
 <li>Quick introduction at <a href="https://psychstatsworkshop.wordpress.com/2014/08/06/lesson-9-hypothesis-testing/">https://psychstatsworkshop.wordpress.com/2014/08/06/lesson-9-hypothesis-testing/</a></li>
 </ul>
 </div>
 <div id="p-values" class="section level2">
 <h2>p-values</h2>
 <ul>
-<li>p-value: the p-value of a statistical test is the probability, computed as suming that <span class="math">\(H_0\)</span> is true, that the test statistic would take a value as extreme or more extreme than that actually observed.</li>
+<li>p-value: the p-value of a statistical test is the probability, computed assuming that <span class="math">\(H_0\)</span> is true, that the test statistic would take a value as extreme or more extreme than that actually observed.</li>
 <li><a href="http://www.nature.com/news/psychology-journal-bans-p-values-1.17001">http://www.nature.com/news/psychology-journal-bans-p-values-1.17001</a></li>
 <li><a href="https://www.sciencenews.org/blog/context/p-value-ban-small-step-journal-giant-leap-science">https://www.sciencenews.org/blog/context/p-value-ban-small-step-journal-giant-leap-science</a></li>
 </ul>
