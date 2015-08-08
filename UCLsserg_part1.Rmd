@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis in Software Engineering"
-output: html_document
+output: pdf_document
 header-includes: \usepackage{amsmath}
 ---
 Author: Javier Dolado. Collaborator: Daniel Rodriguez
@@ -57,9 +57,10 @@ Important: for compiling this document you need to change the paths to the image
 
 ## The Aim of Data Analysis and Statistical Learning
   - The aim of any data analysis is to  **understand the data** 
-  - and to build models for making predictions and estimating future events based on past data. 
+  - and to build models for making predictions and estimating future events based on past data
+  - and to make statistical inferences from our data.
   - We may want to test different hypothesis on the data
-  - We want to generate conclusions about the population where our data comes from
+  - We want to generate conclusions about the population where our sample data comes from
   - Most probably we are interested in building a model for quality, time, defects or effort prediction
     
   ![](/home/javier/DocProjects/PRESI2013/london2015/prediction.png)
@@ -98,6 +99,8 @@ Important: for compiling this document you need to change the paths to the image
   - Basic Plots: 
     + **Histogram**: The histogram defines a sequence of breaks and then counts the number of observation in the bins formed by the breaks.
     + **Boxplot**: The boxplot is used to summarize data succinctly, quickly displaying if the data is symmetric or has suspected outliers.
+    
+    
       ![](/home/javier/DocProjects/PRESI2013/london2015/boxplotexp.png)
       
       
@@ -106,10 +109,10 @@ Important: for compiling this document you need to change the paths to the image
 
 ## Normality 
   - A normal distribution is an arrangement of a data set in which most values cluster in the middle of the range
-  - A graphical representation of a normal distribution is sometimes called a bell curve because of its shape.
+  - A graphical representation of a normal distribution is sometimes called a *bell curve* because of its shape.
   - Many procedures in statistics are based on this property. *Parametric* procedures require the normality property.
   - In a normal distribution about 95% of the probability lies within 2 Standard Deviations of the mean.
-  - Two examples: one population with mean 60 and the standard deviation of 1, and the other with mean 60 and    (means shifted to 0)
+  - Two examples: one population with mean 60 and the standard deviation of 1, and the other with mean 60 and sd=4 (means shifted to 0)
   
 ```{r}
 main.title <- "Area within 2 SD of the mean"
@@ -183,6 +186,8 @@ plot(size_telecom1, effort_telecom1)
 
 
 ## China dataset 
+
+
 ```{r}
 library(foreign)
 china <- read.arff("china.arff")
@@ -216,7 +221,10 @@ hist(galton$parent,col="blue") #,breaks=100)
 
 
 ## Normalization
+
   - China dataset
+  
+  
 ```{r, echo=FALSE}
 par(mfrow=c(1,2))
 logchina_size = log(china_size)
@@ -226,10 +234,15 @@ hist(logchina_effort, col="blue",xlab="Effort", main="Distribution of log Effort
 qqnorm(logchina_size)
 qqnorm(logchina_effort)
 ```
-  - If the log-log transformation is used the estimation equation is $$y= e^{b_0 + b_1 log(x)} $$
+
+
+- If the log-log transformation is used the estimation equation is $$y= e^{b_0 + b_1 log(x)} $$
 
 ## China dataset. Correlation. 
-  - With the whole dataset we may check for the Correlation of the variables we are interested in
+
+  - **Correlation** is a statistical relationship between two sets of data.
+  - With the whole dataset we may check for the linear Correlation of the variables we are interested in
+  
   
 ```{r}
 par(mfrow=c(1,1))
@@ -239,6 +252,8 @@ cor.test(china_size,china_effort)
 cor(china_size,china_effort, method="spearman")
 cor(china_size,china_effort, method="kendall")
 ```
+
+
 
 ## Linear Regression
   - This procedure fits a straight line to the data. The idea is that the independent variable x is something the experimenter controls and the dependent variable y is something that the experimenter measures. The line is used to predict the value of y for a known value of x. The variable x is the predictor variable and y the response variable.
@@ -250,6 +265,8 @@ cor(china_size,china_effort, method="kendall")
   - The method used to choose the values $b_0$ and $b_1$ is to minimize the sum of the squares of the residual errors.
 
 ## Galton Data
+
+
 ```{r}
 # library(UsingR); data(galton)
 par(mfrow=c(1,2))
@@ -270,6 +287,8 @@ qqnorm(galton$child)
     + *Standard Q-Q plot*: residual errors are normally distributed
     + *Square root of the standardized residuals vs the fitted value*s: there should be no obvious trend.
     + *Leverage*: measures the importance of each point in determining the regression result. Smaller values means that removing the observation has little effect on the regression result. 
+
+
 
 ## China dataset. Linear regression. Fitting a linear model to log-log
   - the predictive power equation is $y= e^{b_0 + b_1 log(x)}$, ignoring the bias corrections
@@ -303,9 +322,12 @@ set. Usually 2/3 of the data points are used for training and 1/3 is used for te
   
   
 ## China dataset. Split data into Training and Testing
-  - 
+  - The data is already divided into two different files
+  
+  
 ```{r}
 chinaTrain <- read.arff("china3AttSelectedAFPTrain.arff")
+nrow(chinaTrain)
 logchina_size <- log(chinaTrain$AFP)
 logchina_effort <- log(chinaTrain$Effort)
 linmodel_logchina_train <- lm(logchina_effort ~ logchina_size)
@@ -317,21 +339,22 @@ plot(linmodel_logchina_train, ask = FALSE)
 linmodel_logchina_train
 ```
 
+
 ## Measures of Evaluation used in Software Engineering
   - There are several measures usually used:
-  - *Mean of the Absolute Error*: compute the absolute errors and take the mean
-  - *Geometric Mean of the Absolute Error*: more appropriate when the distribution is skewed
+  - *Mean of the Absolute Error* (MAR): compute the absolute errors and take the mean
+  - *Geometric Mean of the Absolute Error* (gMAR): more appropriate when the distribution is skewed
   - *Mean Magnitude of the Relative Error (MMRE)*: this measure has been critisized many times. 
   $$ 
-  \frac{\sum_{n=1}^{n}{|{\hat{y}_i}|}/y_i}{n}
+  \frac{\sum_{i=1}^{n}{|{\hat{y}_i-y_i}|}/y_i}{n}
   $$
   - *Median Magnitude of the Relative Error (MdMRE)*: using the median insted of the mean
   - *Level of Prediction (LPred(l))*: defined as the percentage of estimates that are within the level l% of the actual values. Usually the level of prediction is set at 25% below and above the actual value and an estimation method is considered good if give a result of more than 75%.
-  - *Standardised Accuracy (SA)*: this measure overcomes all the problems of the MMRE (proposed by Shepperd&MacDonnell). It is defined as the MAR relative to random guessing:
+  - *Standardised Accuracy (SA)* (proposed by Shepperd&MacDonnell): this measure overcomes all the problems of the MMRE. It is defined as the MAR relative to random guessing:
 $$
  SA=1-{\frac{MAR}{\overline{MAR}_{P_0}}\times100}.
 $$
-  - "random guessing" is defined as: predict a $\hat{y}_t$ for the target case *t* by randomly sampling (with equal probability) over all the remaining n-1 cases and take $\hat{y}_t=y_r$ where r is drawn randomly from 1,n and $r\neq t$.
+  - "random guessing" $\overline{MAR}_{P_0}$ is defined as: predict a $\hat{y}_t$ for the target case *t* by randomly sampling (with equal probability) over all the remaining n-1 cases and take $\hat{y}_t=y_r$ where r is drawn randomly from 1,n and $r\neq t$.
 
 ## Evaluation of the model in the Testing data (2)
 
@@ -502,6 +525,7 @@ hist(randnaiveruns, main="MARP0 distribution of the Atkinson dataset")
 
 
 ## Confidence Intervals. Bootstrap
+  - Until now we have generated point estimates
   - A *confidence interval* (CI) is an interval estimate of a population parameter. The parameter can be the mean, the median or other. The frequentist CI is an observed interval that is different from sample to sample. It frequently includes the value of the unobservable parameter of interes if the experiment is repeated. The *confidence level* is the value that measures the frequency that the constructed intervals contain the true value of the parameter. 
   - The construction of a confidence interval with an exact value of confidence level for a distribution requires some statistical properties. Usually, *normality* is one of the properties required for computing confidence intervals. 
     - Not all confidence intervals contain the true value of the parameter.
@@ -551,7 +575,7 @@ norsim(sims = 100, n = 36, mu = 100, sigma = 18, conf.level = 0.95)
 ```
 
   - The range defined by the confidence interval will vary with each sample, because the sample size will vary each time and the standard deviation will vary too.
-  - ‘95%’ confidence interval means: is the probability that the hypothetical confidence intervals (that would be computed from the hypothetical repeated samples) will contain the population mean.
+  - ‘95%’ confidence interval: it is the probability that the hypothetical confidence intervals (that would be computed from the hypothetical repeated samples) will contain the population mean.
   - the particular interval that we compute on one sample does not mean that the population mean lies within that interval with a probability of 95%.
   - recommended reading:  *Robust misinterpretation of confidence intervals*, Rink Hoekstra, Richard D. Morey, Jeffrey N. Rouder, Eric-Jan Wagenmakers.  Psychonomic Bulletin & Review, October 2014 
 
@@ -597,7 +621,7 @@ BCAciboot4geommean <- function(b){
   return (conf_int)
 }
 # this is a boot object
-b_gm <- boot_geom_mean(ae)
+b_gm <- boot_geom_mean(ae) #"ae" is the absolute error in the China Test data
 print(paste0("Geometric Mean of the China Test data: ", round(exp(b_gm$t0), digits=3)))
 b_ci_gm <- BCAciboot4geommean(b_gm)
 print(paste0("Confidence Interval: ", round(b_ci_gm[4], digits=3), " - ", round(b_ci_gm[5], digits=3)))
