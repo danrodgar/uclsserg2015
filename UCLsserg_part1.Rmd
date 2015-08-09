@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis in Software Engineering"
-output: pdf_document
+output: html_document
 header-includes: \usepackage{amsmath}
 ---
 Author: Javier Dolado. Collaborator: Daniel Rodriguez
@@ -15,7 +15,7 @@ This is an R Markdown presentation. Markdown is a simple formatting syntax for a
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
 
-Important: for compiling this document you need to change the paths to the images used below, i.e., change */home/javier/DocProjects/PRESI2013/london2015/prediction.png* to the folder where you have downloaded the content of [https://github.com/javierdolado/uclsserg2015](https://github.com/javierdolado/uclsserg2015)
+Important: for compiling this document you need to change the paths to your folders where you have downloaded the content of [https://github.com/javierdolado/uclsserg2015](https://github.com/javierdolado/uclsserg2015), i.e, change */home/javier/DocProjects/PRESI2013/london2015.
 
 ## Outline of the talk
   - Setting the environment
@@ -25,7 +25,6 @@ Important: for compiling this document you need to change the paths to the image
   - Model Building for Prediction
     + Linear Regression
     + Genetic Programming for Symbolic Regression
-    + Neural Networks
   - Model Evaluation
     + Descriptive statistics
   - Confidence Intervals
@@ -97,7 +96,7 @@ Important: for compiling this document you need to change the paths to the image
   - The first task with any dataset is to characterise it in terms of summary statistics and graphics
   - Displaying information graphically will help us to identify the main characteristics of the data. To describe a distribution we often want to know where it is centered and and what the spread is (mean, median, quantiles)
   - Basic Plots: 
-    + **Histogram**: The histogram defines a sequence of breaks and then counts the number of observation in the bins formed by the breaks.
+    + **Histogram**: The histogram defines a sequence of breaks and then counts the number of observations in the bins formed by the breaks.
     + **Boxplot**: The boxplot is used to summarize data succinctly, quickly displaying if the data is symmetric or has suspected outliers.
     
     
@@ -208,7 +207,7 @@ qqline(china_effort)
   - We observe the non-normality of the data. 
 
 ## Normality. Galton data
-  - It is the data based on the famous 1885 study of Francis Galton exploring the relationship between the heights of adult children and the heights of their parents.
+  - It is the data based on the famous 1885 Francis Galton's study about the relationship between the heights of adult children and the heights of their parents.
 
 
 ```{r, echo=FALSE}
@@ -222,7 +221,7 @@ hist(galton$parent,col="blue") #,breaks=100)
 
 ## Normalization
 
-  - China dataset
+  - China dataset. Take logs in both independent variables. 
   
   
 ```{r, echo=FALSE}
@@ -349,7 +348,7 @@ linmodel_logchina_train
   \frac{\sum_{i=1}^{n}{|{\hat{y}_i-y_i}|}/y_i}{n}
   $$
   - *Median Magnitude of the Relative Error (MdMRE)*: using the median insted of the mean
-  - *Level of Prediction (LPred(l))*: defined as the percentage of estimates that are within the level l% of the actual values. Usually the level of prediction is set at 25% below and above the actual value and an estimation method is considered good if give a result of more than 75%.
+  - *Level of Prediction (LPred(l))*: defined as the percentage of estimates that are within the level l% of the actual values. Usually the level of prediction is set at 25% below and above the actual value and an estimation method is considered good if it gives a result of more than 75%.
   - *Standardised Accuracy (SA)* (proposed by Shepperd&MacDonnell): this measure overcomes all the problems of the MMRE. It is defined as the MAR relative to random guessing:
 $$
  SA=1-{\frac{MAR}{\overline{MAR}_{P_0}}\times100}.
